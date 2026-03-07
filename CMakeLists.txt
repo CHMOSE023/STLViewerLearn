@@ -6,7 +6,7 @@ project(STLViewerLearn)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-
+  
 # -------------------------------
 # 设置输出目录
 # -------------------------------
@@ -25,6 +25,11 @@ endforeach()
 # Windows 动态库自动导出符号，生成配套 .lib 导入库
 # -------------------------------
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+
+if(MSVC)
+    add_definitions("-DUNICODE" "-D_UNICODE")  # Windows API 使用宽字符版本
+    add_compile_options(/utf-8)                # 源文件按 UTF-8 解析
+endif()
 
 # -------------------------------
 # 设置 include 目录

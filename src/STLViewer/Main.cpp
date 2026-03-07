@@ -1,26 +1,24 @@
-#include "CadBase.h"
-#include "Entity.h"
-#include "OpenGLDC.h"
-#include <stdio.h>
+#include "STLWindows.h"
 #include <iostream>
-
+#include <Windows.h>
 int main() {
+    SetConsoleOutputCP(CP_UTF8);   // 控制台输出用 UTF-8
+    SetConsoleCP(CP_UTF8);         // 控制台输入用 UTF-8
     try {
-        CadBase* cad = new CadBase;
-        Entity* ent = new Entity;
-        OpenGLDC* dc = new OpenGLDC;
+        
+        STLWindows* pSTLWindows = new STLWindows;
 
-        // TODO: 实际业务逻辑
+        pSTLWindows->Initialize(1024, 768, L"STLViewer");
 
-        delete dc;
-        delete ent;
-        delete cad;
+        pSTLWindows->Run();
+		 
+        delete pSTLWindows;
+		pSTLWindows = nullptr;
     }
     catch (const std::exception& e) {
         std::cerr << "Exception: " << e.what() << std::endl;
         return -1;
-    }
-
-    getchar();
+    }  
+     
     return 0;
 }
