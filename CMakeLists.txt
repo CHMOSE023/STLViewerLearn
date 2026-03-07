@@ -6,7 +6,7 @@ project(STLViewerLearn)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-  
+   
 # -------------------------------
 # 设置输出目录
 # -------------------------------
@@ -35,6 +35,8 @@ endif()
 # 设置 include 目录
 # -------------------------------
 include_directories(
+    "${CMAKE_CURRENT_SOURCE_DIR}/third/glm"
+    "${CMAKE_CURRENT_SOURCE_DIR}/third/glad/include"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/GeomCalc"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/GeomKernel"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/glContext"
@@ -53,7 +55,8 @@ file(GLOB STLVIEWER_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/STLViewer/*.cpp")
 # -------------------------------
 add_library(GeomCalc SHARED ${GEOMCALC_SOURCES})
 add_library(GeomKernel SHARED ${GEOMKERNEL_SOURCES})
-add_library(glContext SHARED ${GLCONTEXT_SOURCES})
+add_library(glContext SHARED ${GLCONTEXT_SOURCES}) 
+add_library(glad STATIC third/glad/src/glad.c)
 
 # -------------------------------
 # 构建可执行文件
@@ -63,5 +66,7 @@ add_executable(STLViewer ${STLVIEWER_SOURCES})
 # -------------------------------
 # 链接库
 # -------------------------------
+# glContext 链接
+target_link_libraries(glContext PRIVATE glad opengl32)
 target_link_libraries(STLViewer GeomCalc GeomKernel glContext)
  

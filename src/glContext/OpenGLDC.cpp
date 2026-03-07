@@ -1,9 +1,7 @@
 #include <stdio.h>
 #include "OpenGLDC.h"
-#include <Windows.h>
-#include <gl/GL.h>
-
-#pragma comment(lib, "opengl32.lib")  
+#include <Windows.h> 
+#include <glad/glad.h>
 
 OpenGLDC::OpenGLDC():
 	m_hDC(nullptr),
@@ -61,7 +59,8 @@ BOOL OpenGLDC::Initialize(HWND hWnd)
         return  false;
     }
       
-    //glewInit();
+	gladLoadGL(); // 加载 OpenGL 函数指针
+
     return  true; 
 }
 
