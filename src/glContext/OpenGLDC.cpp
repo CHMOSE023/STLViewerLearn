@@ -1,24 +1,3 @@
-// OpenGLDC.cpp
-// Win32 / OpenGL 4.6 core-profile rendering context.
-// Extension loading: GLAD (glad.c + glad_wgl.c) – NO GLEW.
-//
-// Build notes:
-//   1. Add glad.c and glad_wgl.c to your project (they are plain C files).
-//   2. Include paths: $(ProjectDir)\include   (contains glad/ and KHR/ folders)
-//   3. Link: opengl32.lib
-//   4. glad_wgl.h requires GLAD_WGL – define it project-wide or rely on the
-//      generated header guard that sets it automatically.
-//
-// GLAD generator settings used:
-//   Language   : C/C++
-//   Spec       : OpenGL  API gl=4.6  Profile=core
-//   Extensions : WGL_ARB_create_context
-//                WGL_ARB_create_context_profile
-//                WGL_ARB_pixel_format
-//                WGL_EXT_swap_control
-//   Options    : Generate loader = YES
-//   URL        : https://glad.dav1d.de/
-
 #include "OpenGLDC.h"
 
 #include <glm/gtc/matrix_transform.hpp>
@@ -676,50 +655,7 @@ void OpenGLDC::FreeMesh(Mesh& m)
     if (m.vao) { glDeleteVertexArrays(1, &m.vao); m.vao = 0; }
     m.indexCount = 0;
 }
-
-// ============================================================================
-// WGL context creation – OpenGL 4.6 core profile via GLAD
-//
-// Flow:
-//   1. Assign a legacy pixel format (required so wglCreateContext works).
-//   2. Create a throwaway legacy GL context.
-//   3. gladLoadWGL(hDC) – loads wglChoosePixelFormatARB,
-//                                wglCreateContextAttribsARB,
-//                                wglSwapIntervalEXT, …
-//   4. Destroy the dummy context.
-//   5. Re-apply a proper pixel format (32-bit RGBA, depth 24, 4× MSAA).
-//   6. wglCreateContextAttribsARB → OpenGL 4.6 core-profile context.
-//   7. gladLoadGL() – loads all OpenGL 4.6 function pointers.
-// ============================================================================
-
-// WGL extension function pointer typedefs
-// (normally provided by wglext.h or glad_wgl.h – we declare them inline
-//  to avoid any extra header dependency)
-typedef HGLRC(WINAPI* PFNWGLCREATECONTEXTATTRIBSARBPROC)
-(HDC hDC, HGLRC hShareContext, const int* attribList);
-
-typedef BOOL(WINAPI* PFNWGLCHOOSEPIXELFORMATARBPROC)
-(HDC hDC, const int* piAttribIList, const FLOAT* pfAttribFList,
-    UINT nMaxFormats, int* piFormats, UINT* nNumFormats);
-
-// WGL token constants (from wglext.h)
-#define WGL_DRAW_TO_WINDOW_ARB             0x2001
-#define WGL_SUPPORT_OPENGL_ARB             0x2010
-#define WGL_DOUBLE_BUFFER_ARB              0x2011
-#define WGL_PIXEL_TYPE_ARB                 0x2013
-#define WGL_TYPE_RGBA_ARB                  0x202B
-#define WGL_COLOR_BITS_ARB                 0x2014
-#define WGL_DEPTH_BITS_ARB                 0x2022
-#define WGL_STENCIL_BITS_ARB               0x2023
-#define WGL_SAMPLE_BUFFERS_ARB             0x2041
-#define WGL_SAMPLES_ARB                    0x2042
-#define WGL_CONTEXT_MAJOR_VERSION_ARB      0x2091
-#define WGL_CONTEXT_MINOR_VERSION_ARB      0x2092
-#define WGL_CONTEXT_FLAGS_ARB              0x2094
-#define WGL_CONTEXT_PROFILE_MASK_ARB       0x9126
-#define WGL_CONTEXT_CORE_PROFILE_BIT_ARB   0x00000001
-#define WGL_CONTEXT_DEBUG_BIT_ARB          0x00000001
-
+ 
 bool OpenGLDC::CreateGLContext()
 {
 

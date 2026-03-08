@@ -16,9 +16,10 @@ Camera::Camera()
 
 void Camera::Init()
 {
-    m_eye = glm::vec3(0.0f, 0.0f, 1000.0f); // eye on Z axis (front view)
+    // Y-up 坐标系：eye 在 Z 轴正方向看向原点，Y 轴朝上
+    m_eye = glm::vec3(0.0f, 0.0f, 1000.0f);
     m_ref = glm::vec3(0.0f, 0.0f, 0.0f);
-    m_vecUp = glm::vec3(0.0f, 1.0f, 0.0f); // Y is up
+    m_vecUp = glm::vec3(0.0f, 1.0f, 0.0f);  // Y is up
 
     m_far = 100000.0;
     m_near = 1.0;
@@ -175,21 +176,52 @@ static glm::mat4 RotateAround(const glm::vec3& axis, double angleDeg)
         axis);
 }
 
+// ---------------------------------------------------------------------------
+// 球坐标辅助 - Three.js OrbitControls 同款方案
+// phi   = 从 +Y 轴向下的极角  (0 = 正上方, π/2 = 水平, π = 正下方)
+// theta = 绕 Y 轴的方位角
+// 优点：完全不依赖 cross product，没有极点退化问题
+// ---------------------------------------------------------------------------
+
+struct Spherical {
+    float r = 1.0f;
+    float phi = glm::pi<float>() / 2.0f;
+    float theta = 0.0f;
+};
+
+static Spherical ToSpherical(const glm::vec3& v)
+{
+    Spherical s;
+    s.r = glm::length(v);
+    if (s.r < 1e-6f) return s;
+    s.phi = std::acos(glm::clamp(v.y / s.r, -1.0f, 1.0f));
+    s.theta = std::atan2(v.x, v.z);
+    return s;
+}
+
+static glm::vec3 FromSpherical(const Spherical& s)
+{
+    float sinPhi = std::sin(s.phi);
+    return glm::vec3(
+        s.r * sinPhi * std::sin(s.theta),  // x
+        s.r * std::cos(s.phi),             // y
+        s.r * sinPhi * std::cos(s.theta)   // z
+    );
+}
+
 void Camera::UpdateUpVec()
 {
-    // Y-up world coordinate system
-    glm::vec3 forward = glm::normalize(m_ref - m_eye);
-    glm::vec3 yWorld = glm::vec3(0.0f, 1.0f, 0.0f);
-    glm::vec3 right = glm::normalize(glm::cross(forward, yWorld));
-    m_vecUp = glm::normalize(glm::cross(right, forward));
+    // 球坐标方案下，phi 已被限制在 (1°, 179°)，eye 永远不会真正到达极点
+    // vecUp 始终给世界 Y 轴即可，glm::lookAt 能正确处理
+    m_vecUp = glm::vec3(0.0f, 1.0f, 0.0f);
 }
 
 void Camera::TurnLeft(double angle)
 {
-    glm::mat4 rot = RotateAround(m_vecUp, angle);
     glm::vec3 vec = m_eye - m_ref;
-    vec = glm::vec3(rot * glm::vec4(vec, 0.0f));
-    m_eye = m_ref + vec;
+    Spherical s = ToSpherical(vec);
+    s.theta -= static_cast<float>(angle * PI / 180.0);
+    m_eye = m_ref + FromSpherical(s);
     UpdateUpVec();
 }
 
@@ -200,28 +232,17 @@ void Camera::TurnRight(double angle)
 
 void Camera::TurnUp(double angle)
 {
-    // Y-up: elevation = arcsin( (eye-ref).y / length )
-    // positive Y = looking up, negative Y = looking down
     glm::vec3 vec = m_eye - m_ref;
-    float     len = glm::length(vec);
-    float     elevNow = glm::degrees(std::asin(
-        glm::clamp(vec.y / len, -1.0f, 1.0f)));
+    Spherical s = ToSpherical(vec);
 
-    // Clamp elevation to (-89°, +89°) to prevent gimbal flip past Y poles
-    static constexpr float kMaxElev = 89.0f;
-    static constexpr float kMinElev = -89.0f;
+    // phi 减小 = 向上仰，限制在 (1°, 179°) 防止穿越极点
+    static constexpr float kMinPhi = glm::pi<float>() * 1.0f / 180.0f;
+    static constexpr float kMaxPhi = glm::pi<float>() * 179.0f / 180.0f;
 
-    float elevNew = elevNow + static_cast<float>(angle);
-    if (elevNew > kMaxElev) angle = kMaxElev - elevNow;
-    if (elevNew < kMinElev) angle = kMinElev - elevNow;
+    s.phi -= static_cast<float>(angle * PI / 180.0);
+    s.phi = glm::clamp(s.phi, kMinPhi, kMaxPhi);
 
-    if (std::abs(angle) < 1e-5) return;
-
-    glm::vec3 forward = glm::normalize(m_ref - m_eye);
-    glm::vec3 right = glm::normalize(glm::cross(forward, m_vecUp));
-    glm::mat4 rot = RotateAround(right, angle);
-    vec = glm::vec3(rot * glm::vec4(vec, 0.0f));
-    m_eye = m_ref + vec;
+    m_eye = m_ref + FromSpherical(s);
     UpdateUpVec();
 }
 
@@ -242,6 +263,13 @@ void Camera::SetViewType(ViewType type)
 
     switch (type)
     {
+        // Z-up CAD convention:
+        //   Front  = looking from -Y toward origin, up = +Z
+        //   Back   = looking from +Y toward origin, up = +Z
+        //   Top    = looking from +Z toward origin, up = +Y
+        //   Bottom = looking from -Z toward origin, up = +Y
+        //   Right  = looking from +X toward origin, up = +Z
+        //   Left   = looking from -X toward origin, up = +Z
     case ViewType::Front:
         m_eye = m_ref + glm::vec3(0.0f, -r, 0.0f);
         m_vecUp = glm::vec3(0.0f, 0.0f, 1.0f);
@@ -252,7 +280,7 @@ void Camera::SetViewType(ViewType type)
         break;
     case ViewType::Top:
         m_eye = m_ref + glm::vec3(0.0f, 0.0f, r);
-        m_vecUp = glm::vec3(0.0f, 1.0f, 0.0f);
+        m_vecUp = glm::vec3(0.0f, 1.0f, 0.0f);  // +Y forward when looking down Z
         break;
     case ViewType::Bottom:
         m_eye = m_ref + glm::vec3(0.0f, 0.0f, -r);
