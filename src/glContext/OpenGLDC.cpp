@@ -175,11 +175,9 @@ void OpenGLDC::Resize(int w, int h)
 // ============================================================================
 
 void OpenGLDC::BeginFrame()
-{
-  
-    m_camera.Projection();
-
-    //glClearColor(m_colorBg.r, m_colorBg.g, m_colorBg.b, 1.0f);
+{ 
+    m_camera.Projection(); 
+    glClearColor(m_colorBg.r, m_colorBg.g, m_colorBg.b, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
 }
 
@@ -193,10 +191,11 @@ void OpenGLDC::Render()
 {
     if (!m_initialized) return;
     BeginFrame();
-
-    glClearColor(0.6f, 0.6f, 0.6f, 1.0f);
+  
     // Default scene: coordinate axes.
     // Call Draw* methods between BeginFrame/EndFrame to add geometry.
+
+    DrawLine(glm::vec3(60, 60, 60), glm::vec3(500, 500, 500));
     DrawCoord();
 
     EndFrame();
@@ -376,10 +375,10 @@ void OpenGLDC::DrawCoord()
     float len = static_cast<float>(std::min(w, h) * 0.2);
 
     const glm::vec3 o(0.0f);
-    m_colorDraw = { 1,0,0 }; DrawLine(o, { len, 0,   0 });  // X – red
-    m_colorDraw = { 0,1,0 }; DrawLine(o, { 0,   len, 0 });  // Y – green
+    m_colorDraw = { 1,0,0 }; DrawLine(o, { len, 0,   0 });    // X – red
+    m_colorDraw = { 0,1,0 }; DrawLine(o, { 0,   len, 0 });    // Y – green
     m_colorDraw = { 0,0,1 }; DrawLine(o, { 0,   0,   len });  // Z – blue
-    m_colorDraw = m_colorWireframe;                        // restore
+    m_colorDraw = m_colorWireframe;                           // restore
 }
 
 // ============================================================================

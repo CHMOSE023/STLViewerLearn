@@ -3,8 +3,7 @@
 #include <Windows.h>
 #include "Point.h"
 #include "Vector.h"
-#include "Matrix.h"
-
+#include "Matrix.h" 
 // ── 简单断言工具 ──────────────────────────────────────
 static int passed = 0, failed = 0;
 
@@ -183,7 +182,7 @@ int main() {
     SetConsoleCP(CP_UTF8);
 
     try {
-        testVector2D();
+        /*testVector2D();
         testVector3D();
         testPoint2D();
         testPoint3D();
@@ -192,7 +191,14 @@ int main() {
         testAngles();
 
         std::cout << "\n─────────────────────────────────\n";
-        std::cout << "结果：" << passed << " 通过，" << failed << " 失败\n";
+        std::cout << "结果：" << passed << " 通过，" << failed << " 失败\n";*/ 
+
+        STLWindows* pSTLWindows = new STLWindows;
+        pSTLWindows->Initialize(1200, 900, L"STLWindow");
+		pSTLWindows->m_OpenGLDC->SetBackgroundColor(0.1f, 0.1f, 0.1f); 
+		pSTLWindows->Run();
+		delete pSTLWindows;
+
     }
     catch (const std::exception& e) {
         std::cerr << "Exception: " << e.what() << std::endl;

@@ -40,16 +40,7 @@ BOOL STLWindows::Initialize(int width, int height, const wchar_t* title)
 	int posX = (screenWidth - width) / 2;
 	int posY = (screenHeight - height) / 2;
 
-	m_hWnd = CreateWindow(
-		title,                    
-		title,                   
-		WS_OVERLAPPEDWINDOW,
-		posX, posY,
-		width, height,
-		nullptr,
-		nullptr,
-		hInstance,                
-		this
+	m_hWnd = CreateWindow( 	title,   title,    	WS_OVERLAPPEDWINDOW, posX, posY, width, height, nullptr, nullptr, hInstance,   this
 	);
 
 	 if (!m_hWnd)
@@ -116,8 +107,8 @@ LRESULT STLWindows::EventProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 	case WM_MOUSEWHEEL:
 		m_OpenGLDC->OnMouseWheel(GET_WHEEL_DELTA_WPARAM(wParam));
 		break;
-	case WM_KEYDOWN:
-		
+	case WM_KEYDOWN:		
+		m_OpenGLDC->OnKeyDown((int)wParam);
 		break;
 	case WM_KEYUP:
 	

@@ -220,7 +220,7 @@ void Camera::TurnLeft(double angle)
 {
     glm::vec3 vec = m_eye - m_ref;
     Spherical s = ToSpherical(vec);
-    s.theta -= static_cast<float>(angle * PI / 180.0);
+    s.theta += static_cast<float>(angle * PI / 180.0);
     m_eye = m_ref + FromSpherical(s);
     UpdateUpVec();
 }
@@ -239,7 +239,7 @@ void Camera::TurnUp(double angle)
     static constexpr float kMinPhi = glm::pi<float>() * 1.0f / 180.0f;
     static constexpr float kMaxPhi = glm::pi<float>() * 179.0f / 180.0f;
 
-    s.phi -= static_cast<float>(angle * PI / 180.0);
+    s.phi += static_cast<float>(angle * PI / 180.0);
     s.phi = glm::clamp(s.phi, kMinPhi, kMaxPhi);
 
     m_eye = m_ref + FromSpherical(s);
