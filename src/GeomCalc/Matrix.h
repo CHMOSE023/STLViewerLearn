@@ -125,3 +125,32 @@ public:
     // 行向量约定下，平移量存放在矩阵第四行
     static Matrix3D MakeTranslation(Vector3D v);
 };
+
+
+class Matrix4D {
+public:
+    std::array<std::array<double, 4>, 4> A{};
+    // 默认构造：初始化为单位矩阵
+    Matrix4D() { Identity(); }
+    explicit Matrix4D(const std::array<std::array<double, 4>, 4>& data) : A(data) {}
+    // ── 矩阵乘法 ──────────────────────────────────────────────
+    Matrix4D  operator*(const Matrix4D& m) const;
+    Matrix4D& operator*=(const Matrix4D& m);
+    // ── 设为单位矩阵 ──────────────────────────────────────────
+    void Identity();
+    // ── 行列式（取左上 3×3 子矩阵）──────────────────────────
+    double Determinant() const;
+    // ── 工厂函数 ──────────────────────────────────────────────
+    // 单位矩阵
+    static Matrix4D MakeIdentity();
+    // 镜像矩阵：沿过原点、法向量为 planeNormal 的平面做镜像
+    static Matrix4D MakeMirror(Vector3D planeNormal);
+    // 旋转矩阵：绕过原点的 axis 轴，逆时针旋转 angleRad 弧度
+    static Matrix4D MakeRotation(double angleRad, Vector3D axis);
+    // 均匀缩放矩阵
+    static Matrix4D MakeScale(double s);
+    // 平移矩阵：沿向量 v 方向平移
+    static Matrix4D MakeTranslation(Vector3D v);
+
+    void ToFloatArray(float f[16]) const;
+};

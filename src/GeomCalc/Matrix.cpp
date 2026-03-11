@@ -198,3 +198,147 @@ double Matrix3D::Determinant() const {
     }
     return det;
 }
+
+
+// ── Matrix4D ─────────────────────────────────────────────────
+
+void Matrix4D::Identity()
+{
+    A = { {
+        {1,0,0,0},
+        {0,1,0,0},
+        {0,0,1,0},
+        {0,0,0,1}
+    } };
+}
+
+// 矩阵乘法
+Matrix4D Matrix4D::operator*(const Matrix4D& m) const
+{
+    Matrix4D result;
+
+    for (int i = 0; i < 4; ++i)
+        for (int j = 0; j < 4; ++j)
+        {
+            result.A[i][j] = 0;
+
+            for (int k = 0; k < 4; ++k)
+                result.A[i][j] += A[i][k] * m.A[k][j];
+        }
+
+    return result;
+}
+
+Matrix4D& Matrix4D::operator*=(const Matrix4D& m)
+{
+    return *this = *this * m;
+}
+
+// 行列式（取左上 3×3）
+double Matrix4D::Determinant() const
+{
+    double det = 0;
+
+    for (int j = 0; j < 3; ++j)
+    {
+        int j1 = (j + 1) % 3;
+        int j2 = (j + 2) % 3;
+
+        det += A[0][j] *
+            (A[1][j1] * A[2][j2] - A[1][j2] * A[2][j1]);
+    }
+
+    return det;
+}
+
+Matrix4D Matrix4D::MakeIdentity()
+{
+    return Matrix4D{};
+}
+
+
+Matrix4D Matrix4D::MakeRotation(double angle, Vector3D axis)
+{
+    auto n = axis.Normalized();
+
+    double x = n.dx;
+    double y = n.dy;
+    double z = n.dz;
+
+    double c = std::cos(angle);
+    double s = std::sin(angle);
+    double t = 1 - c;
+
+    Matrix4D m;
+
+    m.A = { {
+        {t * x * x + c,     t * x * y + s * z,   t * x * z - s * y,   0},
+        {t * x * y - s * z,   t * y * y + c,     t * y * z + s * x,   0},
+        {t * x * z + s * y,   t * y * z - s * x,   t * z * z + c,     0},
+        {0,             0,             0,             1}
+    } };
+
+    return m;
+}
+
+
+Matrix4D Matrix4D::MakeScale(double s)
+{
+    Matrix4D m;
+
+    m.A = { {
+        {s,0,0,0},
+        {0,s,0,0},
+        {0,0,s,0},
+        {0,0,0,1}
+    } };
+
+    return m;
+}
+
+
+Matrix4D Matrix4D::MakeTranslation(Vector3D v)
+{
+    Matrix4D m;
+
+    m.A = { {
+        {1,0,0,0},
+        {0,1,0,0},
+        {0,0,1,0},
+        {v.dx, v.dy, v.dz, 1}
+    } };
+
+    return m;
+}
+
+
+Matrix4D Matrix4D::MakeMirror(Vector3D planeNormal)
+{
+    auto n = planeNormal.Normalized();
+
+    double x = n.dx;
+    double y = n.dy;
+    double z = n.dz;
+
+    Matrix4D m;
+
+    m.A = { {
+        {1 - 2 * x * x,  -2 * x * y,   -2 * x * z,   0},
+        {-2 * x * y,   1 - 2 * y * y,  -2 * y * z,   0},
+        {-2 * x * z,   -2 * y * z,   1 - 2 * z * z,  0},
+        {0,        0,        0,         1}
+    } };
+
+    return m;
+}
+
+void  Matrix4D::ToFloatArray( float f[16])  const
+{
+    int index = 0;
+
+    for (int c = 0; c < 4; ++c)
+        for (int r = 0; r < 4; ++r)
+            f[index++] = static_cast<float>(A[r][c]);
+}
+ 
+ 

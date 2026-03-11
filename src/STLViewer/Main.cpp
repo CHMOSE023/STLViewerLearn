@@ -4,6 +4,7 @@
 #include "Point.h"
 #include "Vector.h"
 #include "Matrix.h" 
+#include "GeomCalc.h"
 // ── 简单断言工具 ──────────────────────────────────────
 static int passed = 0, failed = 0;
 
